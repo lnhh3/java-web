@@ -1,0 +1,16 @@
+package com.learning.java_web.commons.responses;
+
+public enum RestApiMessage {
+    USER_NOT_FOUND,
+    ADDRESS_NOT_FOUND,
+    ADDRESS_NAME_INVALID,
+    USERNAME_INVALID,
+    PHONE_NUMBER_INVALID,
+    EMAIL_INVALID,
+    CATEGORY_NOT_FOUND,
+    ID_INVALID,
+    PARENT_ID_INVALID,
+    BAD_REQUEST,
+    NAME_ALREADY_EXISTED,
+    PARENT_ID_ALREADY_EXISTED,
+}
