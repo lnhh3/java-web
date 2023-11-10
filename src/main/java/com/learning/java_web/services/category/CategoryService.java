@@ -9,6 +9,8 @@ import com.learning.java_web.models.requests.UpdateCategoryRequest;
 import com.learning.java_web.models.responses.TreeCategoryResponse;
 import com.learning.java_web.repositories.ICategoryRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -36,6 +38,11 @@ public class CategoryService implements ICategoryService{
     @Override
     public List<Category> getCategoriesByParentId(String parentId) {
         return null;
+    }
+
+    @Override
+    public Page<Category> getPageCategory(String searchKey, Pageable pageable) {
+        return categoryRepo.getPageCategoryWithCategory("%" + searchKey + "%", pageable);
     }
 
     @Override
