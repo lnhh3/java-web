@@ -14,8 +14,8 @@ public interface ICategoryRepo extends JpaRepository<Category, String> {
     select c from Category c where c.name like :search_key
     """)
     Page<Category> getPageCategoryWithCategory(@Param("search_key") String searchKey, Pageable pageable);
+
     Category findByName(String name);
 
     List<Category> findAllByParentId(String parentId);
-    void
 }

@@ -57,8 +57,7 @@ public class CategoryController extends AbstractBaseController {
 
     @GetMapping("/{id}")
     public ResponseEntity getCategoryById(@PathVariable("id") String id) {
-        categoryService.getCategoryById(id);
-        return responseUtil.successResponse(null);
+        return responseUtil.successResponse(categoryService.getCategoryById(id));
     }
 
     @PostMapping

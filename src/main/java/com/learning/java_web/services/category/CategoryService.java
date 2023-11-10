@@ -37,7 +37,7 @@ public class CategoryService implements ICategoryService{
 
     @Override
     public List<Category> getCategoriesByParentId(String parentId) {
-        return null;
+        return categoryRepo.findAllByParentId(parentId);
     }
 
     @Override
