@@ -1,5 +1,8 @@
 package com.learning.java_web.services.category;
 
+import com.learning.java_web.commons.responses.RestApiMessage;
+import com.learning.java_web.commons.responses.RestApiStatus;
+import com.learning.java_web.commons.validators.Validator;
 import com.learning.java_web.models.entities.Category;
 import com.learning.java_web.models.requests.CategoryRequest;
 import com.learning.java_web.models.requests.UpdateCategoryRequest;
@@ -37,17 +40,29 @@ public class CategoryService implements ICategoryService{
 
     @Override
     public Category getCategoryById(String id) {
-        return null;
+        Category category = categoryRepo.findById(id).orElse(null);
+        Validator.notNull(category, RestApiStatus.NOT_FOUND, RestApiMessage.CATEGORY_NOT_FOUND);
+        return category;
     }
 
     @Override
-    public Category createCategory(CategoryRequest categoryRequest) {
-        return null;
+    public void createCategory(CategoryRequest categoryRequest) {
+        Category categoryFindByName = categoryRepo.findByName(categoryRequest.getName());
+        Validator.mustNull(categoryFindByName, RestApiStatus.BAD_REQUEST, RestApiMessage.NAME_ALREADY_EXISTED);
+        if (Validator.isNull(categoryFindByName)) categoryRepo.save(categoryFindByName);
+        Validator.notNullAndNotEmpty(categoryRequest.getParentId(), RestApiStatus.BAD_REQUEST, RestApiMessage.PARENT_ID_INVALID);
+        Category categoryFindById = categoryRepo.findById(categoryRequest.getParentId()).orElse(null);
+        Validator.notNull(categoryFindById, RestApiStatus.NOT_FOUND, RestApiMessage.CATEGORY_NOT_FOUND);
+        Category categoryCreated = Category.builder()
+                .name(categoryRequest.getName())
+                .parentId(categoryFindById.getId())
+                .build();
+        categoryRepo.save(categoryCreated);
     }
 
     @Override
-    public Category updateCategory(String id, UpdateCategoryRequest categoryRequest) {
-        return null;
+    public void updateCategory(String id, UpdateCategoryRequest categoryRequest) {
+
     }
 
     @Override

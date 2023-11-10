@@ -18,9 +18,9 @@ public interface ICategoryService {
 
     Category getCategoryById(String id);
 
-    Category createCategory(CategoryRequest categoryRequest);
+    void createCategory(CategoryRequest categoryRequest);
 
-    Category updateCategory(String id, UpdateCategoryRequest categoryRequest);
+    void updateCategory(String id, UpdateCategoryRequest categoryRequest);
 
     void deleteCategoryById(String id, boolean allowDeleteChild);
 }
