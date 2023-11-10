@@ -19,12 +19,6 @@ public class Validator {
         }
     }
 
-    public static void notExisted(boolean data, RestApiStatus restApiStatus, RestApiMessage restApiMessage) {
-        if (data) {
-            throw new ApplicationException(restApiStatus, restApiMessage);
-        }
-    }
-
     public static void notNull(Object data, RestApiStatus restApiStatus, RestApiMessage restApiMessage) {
         if (data == null) {
             throw new ApplicationException(restApiStatus, restApiMessage);
