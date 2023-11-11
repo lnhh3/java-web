@@ -35,17 +35,17 @@ public class CategoryController extends AbstractBaseController {
         return responseUtil.successResponse(pagingResponse);
     }
 
-    @GetMapping
-    public ResponseEntity getTreeCategories() {
-        return responseUtil.successResponse(categoryService.getTreeCategories());
-    }
+//    @GetMapping
+//    public ResponseEntity getTreeCategories() {
+//        return responseUtil.successResponse(categoryService.getTreeCategories());
+//    }
 
-    @GetMapping("/{id}")
-    public ResponseEntity getTreeCategoriesById(@PathVariable("id") String id) {
-        return responseUtil.successResponse(categoryService.getTreeCategoriesById(id));
-    }
+//    @GetMapping("/{id}")
+//    public ResponseEntity getTreeCategoriesById(@PathVariable("id") String id) {
+//        return responseUtil.successResponse(categoryService.getTreeCategoriesById(id));
+//    }
 
-    @GetMapping("/{parent_id}")
+    @GetMapping("parent/{parent_id}")
     public ResponseEntity getCategoriesByParentId(@PathVariable("parent_id") String parentId) {
         return responseUtil.successResponse(categoryService.getCategoriesByParentId(parentId));
     }

@@ -36,4 +36,10 @@ public class Validator {
             throw new ApplicationException(restApiStatus, restApiMessage);
         }
     }
+
+    public static void notExisted(boolean data, RestApiStatus restApiStatus, RestApiMessage restApiMessage) {
+        if (data) {
+            throw new ApplicationException(restApiStatus, restApiMessage);
+        }
+    }
 }

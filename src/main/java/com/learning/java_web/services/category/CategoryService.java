@@ -56,8 +56,15 @@ public class CategoryService implements ICategoryService{
     public void createCategory(CategoryRequest categoryRequest) {
         Category categoryFindByName = categoryRepo.findByName(categoryRequest.getName());
         Validator.mustNull(categoryFindByName, RestApiStatus.BAD_REQUEST, RestApiMessage.NAME_ALREADY_EXISTED);
-        if (Validator.isNull(categoryFindByName)) categoryRepo.save(categoryFindByName);
-        Validator.notNullAndNotEmpty(categoryRequest.getParentId(), RestApiStatus.BAD_REQUEST, RestApiMessage.PARENT_ID_INVALID);
+        if (Validator.isNull(categoryRequest.getParentId())) {
+            Category categoryCreated = Category.builder()
+                    .name(categoryRequest.getName())
+                    .parentId(categoryRequest.getParentId())
+                    .build();
+            categoryRepo.save(categoryCreated);
+            return;
+        }
+        Validator.notEmpty(categoryRequest.getParentId(), RestApiStatus.BAD_REQUEST, RestApiMessage.PARENT_ID_INVALID);
         Category categoryFindById = categoryRepo.findById(categoryRequest.getParentId()).orElse(null);
         Validator.notNull(categoryFindById, RestApiStatus.NOT_FOUND, RestApiMessage.CATEGORY_NOT_FOUND);
         Category categoryCreated = Category.builder()
@@ -74,7 +81,7 @@ public class CategoryService implements ICategoryService{
         Category categoryFindByName = categoryRepo.findByName(categoryRequest.getName());
         Validator.mustNull(categoryFindByName, RestApiStatus.BAD_REQUEST, RestApiMessage.NAME_ALREADY_EXISTED);
         categoryFindById = Category.builder()
-                .name(categoryFindByName.getName())
+                .name(categoryRequest.getName())
                 .build();
 
         categoryRepo.save(categoryFindById);
@@ -90,6 +97,7 @@ public class CategoryService implements ICategoryService{
             categoryRepo.deleteAll(categoryChildren);
             categoryRepo.deleteById(id);
             if (Validator.isNull(categoryChildren)) categoryRepo.deleteById(id);
+            return;
         }
         categoryRepo.deleteById(id);
     }
