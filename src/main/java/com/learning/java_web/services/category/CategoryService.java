@@ -92,13 +92,16 @@ public class CategoryService implements ICategoryService{
         Category categoryFindById = categoryRepo.findById(id).orElse(null);
         Validator.notNull(categoryFindById, RestApiStatus.NOT_FOUND, RestApiMessage.CATEGORY_NOT_FOUND);
         List<Category> categoryChildren = categoryRepo.findAllByParentId(id);
+        System.out.println(categoryChildren);
         Validator.notNull(categoryChildren, RestApiStatus.BAD_REQUEST, RestApiMessage.CATEGORY_CHILDREN_ALREADY_EXISTED);
+
         if (allowDeleteChild) {
             categoryRepo.deleteAll(categoryChildren);
+            System.out.println(categoryChildren);
             categoryRepo.deleteById(id);
-            if (Validator.isNull(categoryChildren)) categoryRepo.deleteById(id);
-            return;
-        }
-        categoryRepo.deleteById(id);
+            if (Validator.isNull(categoryChildren))
+                categoryRepo.deleteById(id);
+        } else if (!allowDeleteChild && Validator.isNull(categoryChildren))
+            categoryRepo.deleteById(id);
     }
 }
