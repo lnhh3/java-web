@@ -18,18 +18,13 @@ public class CategoryHelper {
     }
 
     public void addNodeToTree(TreeCategoryResponse root, Category category) {
-//      Get parentLevel
         int parentLevel = category.getLevel() - 1;
-//      Checking rootLevel = parentLevel and check rootId = parentId
         if(root.getLevel() == parentLevel && root.getId().equals(category.getParentId())) {
-//          Adding categoryChild to root and stopping
             root.getChildren().add(new TreeCategoryResponse(category));
             return;
         }
 
-//      Check each treeItem
         for (TreeCategoryResponse treeCategoryResponse: root.getChildren()) {
-//          Checking treeItem level different from parentLevel then checking again
             if(treeCategoryResponse.getLevel() != parentLevel) {
                 addNodeToTree(treeCategoryResponse, category);
             } else if(treeCategoryResponse.getId().equals(category.getParentId())) {

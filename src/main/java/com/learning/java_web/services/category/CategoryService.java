@@ -84,27 +84,19 @@ public class CategoryService implements ICategoryService {
 
     @Override
     public void createCategory(CategoryRequest categoryRequest) {
-//      Checking name = null or empty?
         Validator.notNullAndNotEmpty(categoryRequest.getName(), RestApiStatus.BAD_REQUEST, RestApiMessage.CATEGORY_NAME_INVALID);
         Category categoryFindByName = categoryRepo.findByName(categoryRequest.getName());
-//      Checking categoryFindByName existed?
         Validator.mustNull(categoryFindByName, RestApiStatus.EXISTED, RestApiMessage.NAME_ALREADY_EXISTED);
 
-//      Checking parentId different from null and not empty
         Category categoryFindById = null;
         if (categoryRequest.getParentId() != null) {
             Validator.notEmpty(categoryRequest.getParentId(), RestApiStatus.BAD_REQUEST_PARAM, RestApiMessage.PARENT_ID_CANNOT_EMPTY);
-//          Finding categoryChild
             categoryFindById = getCategoryById(categoryRequest.getParentId());
         }
 
-//      If categoryChild not found -> null
         boolean isParentIdNull = categoryFindById == null;
-//      Assigning categoryParentId equals null -> categoryRoot else categoryChild
         String categoryParentId = isParentIdNull ? null : categoryFindById.getId();
-//      If categoryChild not found -> level 0 else -> level + 1
         int level = isParentIdNull ? 0 : categoryFindById.getLevel() + 1;
-        System.out.println(level);
 
         Category categoryCreated = Category.builder()
                 .name(categoryRequest.getName())

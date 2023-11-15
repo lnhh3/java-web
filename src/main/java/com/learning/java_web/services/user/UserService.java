@@ -30,7 +30,6 @@ public class UserService implements IUserService{
 
     @Override
     public void createUser(UserRequest userRequest) {
-        System.out.println(userRequest.getName());
         Validator.notNullAndNotEmpty(userRequest.getName(), RestApiStatus.BAD_REQUEST, RestApiMessage.USERNAME_INVALID);
         Validator.notNullAndNotEmpty(userRequest.getEmail(), RestApiStatus.BAD_REQUEST, RestApiMessage.EMAIL_INVALID);
         Validator.notNullAndNotEmpty(userRequest.getPhoneNumber(), RestApiStatus.BAD_REQUEST, RestApiMessage.PHONE_NUMBER_INVALID);
@@ -47,14 +46,14 @@ public class UserService implements IUserService{
     public void updateUser(String id, UserRequest userRequest) {
         User user = userRepo.findById(id).orElse(null);
         Validator.notNull(user, RestApiStatus.NOT_FOUND, RestApiMessage.USER_NOT_FOUND);
+
         Validator.notNullAndNotEmpty(user.getName(), RestApiStatus.BAD_REQUEST, RestApiMessage.USERNAME_INVALID);
         Validator.notNullAndNotEmpty(user.getEmail(), RestApiStatus.BAD_REQUEST, RestApiMessage.EMAIL_INVALID);
         Validator.notNullAndNotEmpty(user.getPhoneNumber(), RestApiStatus.BAD_REQUEST, RestApiMessage.PHONE_NUMBER_INVALID);
-        user = User.builder()
-                .name(userRequest.getName())
-                .email(userRequest.getEmail())
-                .phoneNumber(userRequest.getPhoneNumber())
-                .build();
+
+        user.setName(userRequest.getName());
+        user.setPhoneNumber(userRequest.getPhoneNumber());
+        user.setEmail(userRequest.getEmail());
         userRepo.save(user);
     }
 
