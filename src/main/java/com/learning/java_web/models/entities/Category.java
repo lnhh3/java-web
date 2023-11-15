@@ -1,6 +1,7 @@
 package com.learning.java_web.models.entities;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.learning.java_web.commons.enums.SystemStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -26,6 +27,13 @@ public class Category implements Serializable {
     @Column(name = "name")
     private String name;
 
+    @Column(name = "level")
+    private int level;
+
     @Column(name = "parent_id")
     private String parentId;
+
+    @Column(name = "status")
+    @Enumerated(EnumType.STRING)
+    private SystemStatus status;
 }

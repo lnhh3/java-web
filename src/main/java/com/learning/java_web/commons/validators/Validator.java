@@ -37,9 +37,27 @@ public class Validator {
         }
     }
 
-    public static void notExisted(boolean data, RestApiStatus restApiStatus, RestApiMessage restApiMessage) {
-        if (data) {
-            throw new ApplicationException(restApiStatus, restApiMessage);
+    public static void mustEqualString(String obj1, String obj2, RestApiStatus restAPIStatus, RestApiMessage restApiMessage) {
+        if(!obj1.equals(obj2)) {
+            throw new ApplicationException(restAPIStatus, restApiMessage);
         }
+    }
+
+    public static void mustTrue(boolean data, RestApiStatus restAPIStatus, RestApiMessage restApiMessage) {
+        if(!data) {
+            throw new ApplicationException(restAPIStatus, restApiMessage);
+        }
+    }
+
+    public static void mustGreater(int num, int intCompare, RestApiStatus restAPIStatus, RestApiMessage restApiMessage) {
+        if(num <= intCompare) throw new ApplicationException(restAPIStatus, restApiMessage);
+    }
+
+    public static void mustLessThan(int num, int intCompare, RestApiStatus restAPIStatus, RestApiMessage restApiMessage) {
+        if(num >= intCompare) throw new ApplicationException(restAPIStatus, restApiMessage);
+    }
+
+    public static void mustEqual(int num1, int num2, RestApiStatus restAPIStatus, RestApiMessage restApiMessage) {
+        if(num1 != num2) throw new ApplicationException(restAPIStatus, restApiMessage);
     }
 }

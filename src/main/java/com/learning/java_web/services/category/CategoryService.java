@@ -1,24 +1,31 @@
 package com.learning.java_web.services.category;
 
+import com.learning.java_web.commons.enums.SystemStatus;
 import com.learning.java_web.commons.responses.RestApiMessage;
 import com.learning.java_web.commons.responses.RestApiStatus;
 import com.learning.java_web.commons.validators.Validator;
+import com.learning.java_web.helper.CategoryHelper;
 import com.learning.java_web.models.entities.Category;
 import com.learning.java_web.models.requests.CategoryRequest;
 import com.learning.java_web.models.requests.UpdateCategoryRequest;
+import com.learning.java_web.models.responses.PagingResponse;
 import com.learning.java_web.models.responses.TreeCategoryResponse;
 import com.learning.java_web.repositories.ICategoryRepo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class CategoryService implements ICategoryService{
+public class CategoryService implements ICategoryService {
     @Autowired
     ICategoryRepo categoryRepo;
+    @Autowired
+    CategoryHelper categoryHelper;
 
     @Override
     public List<Category> getCategories() {
@@ -27,22 +34,45 @@ public class CategoryService implements ICategoryService{
 
     @Override
     public List<TreeCategoryResponse> getTreeCategories() {
-        return null;
+        List<Category> categoryList = this.categoryRepo.findAllOrderLevel();
+        TreeCategoryResponse root = new TreeCategoryResponse();
+        for (Category category : categoryList) {
+            if (category.getParentId() == null) {
+                root.getChildren().add(categoryHelper.convertCategoryToTreeItem(category));
+            } else {
+                categoryHelper.addNodeToTree(root, category);
+            }
+        }
+        return root.getChildren();
     }
 
     @Override
-    public List<TreeCategoryResponse> getTreeCategoriesById(String id) {
-        return null;
+    public TreeCategoryResponse getTreeCategoriesById(String id) {
+        Category category = this.getCategoryById(id);
+        Validator.notNull(category, RestApiStatus.NOT_FOUND, RestApiMessage.CATEGORY_NOT_FOUND);
+        TreeCategoryResponse root = new TreeCategoryResponse(category);
+        List<Category> categoryChildren = this.categoryRepo.findAllByLevelGreaterThanOrderByLevel(category.getLevel());
+        for (Category categoryChild : categoryChildren) {
+            categoryHelper.addNodeToTree(root, categoryChild);
+        }
+        return root;
     }
 
     @Override
     public List<Category> getCategoriesByParentId(String parentId) {
+        Category category = categoryRepo.findById(parentId).orElse(null);
+        Validator.notNull(category, RestApiStatus.NOT_FOUND, RestApiMessage.CATEGORY_NOT_FOUND);
         return categoryRepo.findAllByParentId(parentId);
     }
 
     @Override
-    public Page<Category> getPageCategory(String searchKey, Pageable pageable) {
-        return categoryRepo.getPageCategoryWithCategory("%" + searchKey + "%", pageable);
+    public PagingResponse getPageCategory(int pageNumber, int pageSize, Sort.Direction sortType, String searchKey) {
+        List<Sort.Order> orders = new ArrayList<>();
+        orders.add(new Sort.Order(sortType, "name"));
+        Sort sort = Sort.by(orders);
+        Pageable pageable = PageRequest.of(pageNumber - 1, pageSize, sort);
+        PagingResponse pagingResponse = new PagingResponse((categoryRepo.getPageCategoryWithCategory("%" + searchKey + "%", pageable)));
+        return pagingResponse;
     }
 
     @Override
@@ -54,23 +84,35 @@ public class CategoryService implements ICategoryService{
 
     @Override
     public void createCategory(CategoryRequest categoryRequest) {
+//      Checking name = null or empty?
+        Validator.notNullAndNotEmpty(categoryRequest.getName(), RestApiStatus.BAD_REQUEST, RestApiMessage.CATEGORY_NAME_INVALID);
         Category categoryFindByName = categoryRepo.findByName(categoryRequest.getName());
-        Validator.mustNull(categoryFindByName, RestApiStatus.BAD_REQUEST, RestApiMessage.NAME_ALREADY_EXISTED);
-        if (Validator.isNull(categoryRequest.getParentId())) {
-            Category categoryCreated = Category.builder()
-                    .name(categoryRequest.getName())
-                    .parentId(categoryRequest.getParentId())
-                    .build();
-            categoryRepo.save(categoryCreated);
-            return;
+//      Checking categoryFindByName existed?
+        Validator.mustNull(categoryFindByName, RestApiStatus.EXISTED, RestApiMessage.NAME_ALREADY_EXISTED);
+
+//      Checking parentId different from null and not empty
+        Category categoryFindById = null;
+        if (categoryRequest.getParentId() != null) {
+            Validator.notEmpty(categoryRequest.getParentId(), RestApiStatus.BAD_REQUEST_PARAM, RestApiMessage.PARENT_ID_CANNOT_EMPTY);
+//          Finding categoryChild
+            categoryFindById = getCategoryById(categoryRequest.getParentId());
         }
-        Validator.notEmpty(categoryRequest.getParentId(), RestApiStatus.BAD_REQUEST, RestApiMessage.PARENT_ID_INVALID);
-        Category categoryFindById = categoryRepo.findById(categoryRequest.getParentId()).orElse(null);
-        Validator.notNull(categoryFindById, RestApiStatus.NOT_FOUND, RestApiMessage.CATEGORY_NOT_FOUND);
+
+//      If categoryChild not found -> null
+        boolean isParentIdNull = categoryFindById == null;
+//      Assigning categoryParentId equals null -> categoryRoot else categoryChild
+        String categoryParentId = isParentIdNull ? null : categoryFindById.getId();
+//      If categoryChild not found -> level 0 else -> level + 1
+        int level = isParentIdNull ? 0 : categoryFindById.getLevel() + 1;
+        System.out.println(level);
+
         Category categoryCreated = Category.builder()
                 .name(categoryRequest.getName())
-                .parentId(categoryFindById.getId())
+                .level(level)
+                .parentId(categoryParentId)
+                .status(SystemStatus.ACTIVE)
                 .build();
+
         categoryRepo.save(categoryCreated);
     }
 
@@ -79,10 +121,9 @@ public class CategoryService implements ICategoryService{
         Category categoryFindById = categoryRepo.findById(id).orElse(null);
         Validator.notNull(categoryFindById, RestApiStatus.NOT_FOUND, RestApiMessage.CATEGORY_NOT_FOUND);
         Category categoryFindByName = categoryRepo.findByName(categoryRequest.getName());
-        Validator.mustNull(categoryFindByName, RestApiStatus.BAD_REQUEST, RestApiMessage.NAME_ALREADY_EXISTED);
-        categoryFindById = Category.builder()
-                .name(categoryRequest.getName())
-                .build();
+        Validator.mustNull(categoryFindByName, RestApiStatus.EXISTED, RestApiMessage.NAME_ALREADY_EXISTED);
+
+        categoryFindById.setName(categoryRequest.getName());
 
         categoryRepo.save(categoryFindById);
     }
@@ -91,17 +132,27 @@ public class CategoryService implements ICategoryService{
     public void deleteCategoryById(String id, boolean allowDeleteChild) {
         Category categoryFindById = categoryRepo.findById(id).orElse(null);
         Validator.notNull(categoryFindById, RestApiStatus.NOT_FOUND, RestApiMessage.CATEGORY_NOT_FOUND);
-        List<Category> categoryChildren = categoryRepo.findAllByParentId(id);
-        System.out.println(categoryChildren);
-        Validator.notNull(categoryChildren, RestApiStatus.BAD_REQUEST, RestApiMessage.CATEGORY_CHILDREN_ALREADY_EXISTED);
 
         if (allowDeleteChild) {
-            categoryRepo.deleteAll(categoryChildren);
-            System.out.println(categoryChildren);
-            categoryRepo.deleteById(id);
-            if (Validator.isNull(categoryChildren))
-                categoryRepo.deleteById(id);
-        } else if (!allowDeleteChild && Validator.isNull(categoryChildren))
-            categoryRepo.deleteById(id);
+            List<Category> categoryChildren = categoryRepo.findAllByParentId(id);
+            List<Category> deleteCategories = new ArrayList<>();
+            deleteCategoriesWithChild(categoryChildren, deleteCategories);
+            categoryRepo.deleteAll(deleteCategories);
+        } else {
+            List<Category> categories = getCategoriesByParentId(categoryFindById.getId());
+            Validator.mustEqual(categories.size(), 0, RestApiStatus.CONFLICT, RestApiMessage.CANNOT_DELETED_WHILE_CHILDREN_EXISTED);
+        }
+
+        categoryRepo.deleteById(categoryFindById.getId());
+    }
+
+    private void deleteCategoriesWithChild(List<Category> categories, List<Category> deleteCategories) {
+        deleteCategories.addAll(categories);
+
+        for (Category c : categories) {
+            String parentId = c.getId();
+            List<Category> categoriesFindByParentId = categoryRepo.findAllByParentId(parentId);
+            deleteCategoriesWithChild(categoriesFindByParentId, deleteCategories);
+        }
     }
 }

@@ -3,9 +3,9 @@ package com.learning.java_web.services.category;
 import com.learning.java_web.models.entities.Category;
 import com.learning.java_web.models.requests.CategoryRequest;
 import com.learning.java_web.models.requests.UpdateCategoryRequest;
+import com.learning.java_web.models.responses.PagingResponse;
 import com.learning.java_web.models.responses.TreeCategoryResponse;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import java.util.List;
 
@@ -14,11 +14,14 @@ public interface ICategoryService {
 
     List<TreeCategoryResponse> getTreeCategories();
 
-    List<TreeCategoryResponse> getTreeCategoriesById(String id);
+    TreeCategoryResponse getTreeCategoriesById(String id);
 
     List<Category> getCategoriesByParentId(String parentId);
 
-    Page<Category> getPageCategory(String searchKey, Pageable pageable);
+    PagingResponse getPageCategory(int pageNumber,
+                                   int pageSize,
+                                   Sort.Direction sortType,
+                                   String searchKey);
 
     Category getCategoryById(String id);
 

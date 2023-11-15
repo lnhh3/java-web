@@ -2,18 +2,16 @@ package com.learning.java_web.models.requests;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import com.learning.java_web.commons.enums.SystemStatus;
 import lombok.*;
 
 @Data
 @Getter
 @Setter
 @ToString
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 @JsonNaming(PropertyNamingStrategy.LowerCaseWithUnderscoresStrategy.class)
-public class CategoryRequest {
+public class UpdateAddressRequest {
     private String name;
-    private String parentId;
 }

@@ -18,4 +18,11 @@ public interface ICategoryRepo extends JpaRepository<Category, String> {
     Category findByName(String name);
 
     List<Category> findAllByParentId(String parentId);
+
+    @Query("""
+        select c from Category c order by c.level
+    """)
+    List<Category> findAllOrderLevel();
+
+    List<Category> findAllByLevelGreaterThanOrderByLevel(int level);
 }
